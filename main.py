@@ -29,6 +29,12 @@ handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
+seven_logger = logging.getLogger('discord')
+seven_logger.setLevel(logging.DEBUG)
+seven_handler = logging.FileHandler(filename='seven.log', encoding='utf-8', mode='a')
+seven_handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+seven_logger.addHandler(seven_handler)
+
 
 IMAGES = [
     'https://imgur.com/a/p2aceSH',
@@ -155,6 +161,7 @@ async def on_message(message: Message):
     if message.author.id == 287003884889833472:
         if random.randint(0, 4) == 0:
             await message.add_reaction("<a:Sensei:918707966184677378>")
+        seven_logger.info(message.content)
     if message.author.id == 434975622586957824 and '<:FeelsAnnoyedMan:722224702415962243>' in message.content:
         print('Trolling mystic')
         await message.add_reaction('🌳')
