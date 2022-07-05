@@ -29,7 +29,7 @@ handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-seven_logger = logging.getLogger('discord')
+seven_logger = logging.getLogger('__seven__')
 seven_logger.setLevel(logging.DEBUG)
 seven_handler = logging.FileHandler(filename='seven.log', encoding='utf-8', mode='a')
 seven_handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
@@ -73,6 +73,7 @@ IMAGES = [
 
 GIRION_ID = 235181847770824707
 CJ_ID = 378992331782619137
+SEVEN_ID = 287003884889833472
 
 
 def is_owner():
@@ -132,7 +133,7 @@ async def pretzel(ctx: Context, choice: int) -> None:
     non_eds = len(IMAGES) - 4
     channel: Messageable = ctx.channel
     image = IMAGES[non_eds + choice]
-    msg = await channel.send(f"{image} <@287003884889833472>")
+    msg = await channel.send(f"{image} <@{SEVEN_ID}>")
     await msg.add_reaction("<a:Sensei:918707966184677378>")
 
 
@@ -146,7 +147,7 @@ async def mm(ctx: Context):
     image = IMAGES[c]
     if not isinstance(ctx.channel, discord.VoiceChannel):
         channel: Messageable = ctx.channel
-        msg = await channel.send(f"{image} <@287003884889833472>")
+        msg = await channel.send(f"{image} <@{SEVEN_ID}>")
         await msg.add_reaction("<a:Sensei:918707966184677378>")
 
 
@@ -158,10 +159,10 @@ def refresh_cache(item_id: int) -> None:
 
 @client.listen()
 async def on_message(message: Message):
-    if message.author.id == 287003884889833472:
+    if message.author.id == SEVEN_ID:
         if random.randint(0, 4) == 0:
             await message.add_reaction("<a:Sensei:918707966184677378>")
-        seven_logger.info(message.content)
+        seven_logger.info(f'channel({message.channel}): {message.content}')
     if message.author.id == 434975622586957824 and '<:FeelsAnnoyedMan:722224702415962243>' in message.content:
         print('Trolling mystic')
         await message.add_reaction('🌳')
