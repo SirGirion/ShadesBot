@@ -201,6 +201,12 @@ async def apple(ctx: Context):
         channel: Messageable = ctx.channel
         await channel.send(f"Apple phones are better on account of Girion posting 1 graph and then battering me by calling me a retard and then shoving semantics up my ass until I lost the will to argue")
 
+@client.command()
+async def honk(ctx: Context):
+    if not isinstance(ctx.channel, discord.VoiceChannel):
+        channel: Messageable = ctx.channel
+        await channel.send(f"Burn the curches\nHang christfags in the street")
+
 
 load_mappings()
 print("Running")
