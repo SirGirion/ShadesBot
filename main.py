@@ -74,6 +74,11 @@ RARE_EDS = [
     'https://imgur.com/a/ujj7Uj2' # Stoner matt, 10
 ]
 
+HONKS = [
+    'Burn the churches\nHang the christfags in the street',
+    'Shut your mouth cat!'
+]
+
 GIRION_ID = 235181847770824707
 CJ_ID = 378992331782619137
 SEVEN_ID = 287003884889833472
@@ -223,12 +228,8 @@ async def apple(ctx: Context):
 async def honk(ctx: Context):
     if not isinstance(ctx.channel, discord.VoiceChannel):
         channel: Messageable = ctx.channel
-        if ctx.message.author.id == GOOSE_ID:
-            can_use = random.randint(0, 5) == 1
-            if not can_use:
-                await ctx.message.add_reaction('🖕')
-                return
-        await channel.send(f"Burn the curches\nHang christfags in the street")
+        honk_string = random.choice(HONKS)
+        await channel.send(honk_string)
 
 
 load_mappings()
