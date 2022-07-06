@@ -64,11 +64,14 @@ IMAGES = [
     'https://imgur.com/a/ZFAF7Kw',
     'https://imgur.com/a/NYASpE3',
     'https://imgur.com/a/4i6CTc5',
-    'https://imgur.com/a/0s4nnGA',
-    'https://imgur.com/a/N5BtSbh', # Rare Ed Pretzel
-    'https://imgur.com/a/J70RMjb', # Mega Ed Pretzel
-    'https://imgur.com/a/PwRTrUE',  # Nega Ed Pretzel
-    'https://imgur.com/a/ujj7Uj2' # Stoner matt
+    'https://imgur.com/a/0s4nnGA'
+]
+
+RARE_EDS = [
+    'https://imgur.com/a/N5BtSbh', # Rare Ed Pretzel, 0-3
+    'https://imgur.com/a/J70RMjb', # Mega Ed Pretzel, 4-7
+    'https://imgur.com/a/PwRTrUE',  # Nega Ed Pretzel, 8-9
+    'https://imgur.com/a/ujj7Uj2' # Stoner matt, 10
 ]
 
 GIRION_ID = 235181847770824707
@@ -109,31 +112,36 @@ async def reload_mappings(ctx: Context) -> None:
         json.dump(mapping_resp, f)
 
 
-def get_choice() -> int:
-    non_eds = len(IMAGES) - 4
-    c = random.randint(0, non_eds + 1)
-    if c == non_eds + 1:
-        j = random.randint(0, 20)
-        if j == 0:
-            return c
-        elif j == 1:
-            return c + 1
-        elif j == 2:
-            return c + 2
-        elif j == 3:
-            return c + j
-        else:
-            return get_choice()
+def get_choice() -> Tuple[int, bool]:
+    # Roll for regular or rare pretzel
+    roll = random.randint(0, len(IMAGES))
+    if roll < len(IMAGES):
+        return (roll, False)
     else:
-        return c
+        # On the rare pretzel drop table
+        # roll a d30 to see if actually getting a rare ed
+        roll2 = random.randint(0, 29)
+        if roll2 == 0:
+            # Actually on the pretzel table, roll a d11 to determine which pretzel
+            roll3 = random.randint(0, 10)
+            if roll3 >=0 and roll3 <= 3:
+                return (0, True)
+            elif roll3 >= 4 and roll3 <= 7:
+                return (1, True)
+            elif roll3 >= 8 and roll3 <= 9:
+                return (2, True)
+            else:
+                return (3, True)
+        else:
+            # Re-roll
+            return get_choice()
 
 
 @client.command()
 @is_owner()
 async def pretzel(ctx: Context, choice: int) -> None:
-    non_eds = len(IMAGES) - 4
     channel: Messageable = ctx.channel
-    image = IMAGES[non_eds + choice]
+    image = RARE_EDS[choice]
     msg = await channel.send(f"{image} <@{SEVEN_ID}>")
     await msg.add_reaction("<a:Sensei:918707966184677378>")
 
@@ -143,12 +151,12 @@ async def mm(ctx: Context):
     if ctx.message.author.id == CJ_ID:
         await ctx.message.add_reaction('🖕')
         return
-    c = get_choice()
-    print(f"Sending image {IMAGES[c]} ({c})")
-    image = IMAGES[c]
+    c, rare_ed = get_choice()
+    img = IMAGES[c] if not rare_ed else RARE_EDS[rare_ed]
     if not isinstance(ctx.channel, discord.VoiceChannel):
+        print(f"Sending image {img} ({c})")
         channel: Messageable = ctx.channel
-        msg = await channel.send(f"{image} <@{SEVEN_ID}>")
+        msg = await channel.send(f"{img} <@{SEVEN_ID}>")
         await msg.add_reaction("<a:Sensei:918707966184677378>")
 
 
