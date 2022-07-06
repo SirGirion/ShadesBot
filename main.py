@@ -74,6 +74,7 @@ IMAGES = [
 GIRION_ID = 235181847770824707
 CJ_ID = 378992331782619137
 SEVEN_ID = 287003884889833472
+GOOSE_ID = 264822497206206468
 
 
 def is_owner():
@@ -209,10 +210,16 @@ async def apple(ctx: Context):
         channel: Messageable = ctx.channel
         await channel.send(f"Apple phones are better on account of Girion posting 1 graph and then battering me by calling me a retard and then shoving semantics up my ass until I lost the will to argue")
 
+
 @client.command()
 async def honk(ctx: Context):
     if not isinstance(ctx.channel, discord.VoiceChannel):
         channel: Messageable = ctx.channel
+        if ctx.message.author.id == GOOSE_ID:
+            can_use = random.randint(0, 5) == 1
+            if not can_use:
+                await ctx.message.add_reaction('🖕')
+                return
         await channel.send(f"Burn the curches\nHang christfags in the street")
 
 
