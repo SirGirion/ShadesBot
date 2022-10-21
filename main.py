@@ -1,7 +1,4 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from datetime import datetime
 import json
 import os
 import time
@@ -12,15 +9,13 @@ import random
 from discord.flags import Intents
 from discord.message import Message
 import requests
-from typing import Mapping, Tuple
+from typing import Dict, Mapping, Tuple
 from discord.abc import Messageable
 from discord.ext.commands import Bot, check, Context
 
-
 discord_logger = logging.getLogger('discord')
+discord_handler = logging.StreamHandler(sys.stdout)
 discord_logger.setLevel(logging.DEBUG)
-discord_handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='a')
-discord_handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 discord_logger.addHandler(discord_handler)
 
 logger = logging.getLogger(__name__)
@@ -76,6 +71,15 @@ RARE_EDS = [
 
 HONKS = [
     'Burn the churches\nHang the christfags in the street',
+    'Burn the churches\nHang the christfags in the street',
+    'Burn the churches\nHang the christfags in the street',
+    'Burn the churches\nHang the christfags in the street',
+    'Burn the churches\nHang the christfags in the street',
+    'Burn the churches\nHang the christfags in the street',
+    'Burn the churches\nHang the christfags in the street',
+    'Burn the churches\nHang the christfags in the street',
+    'Burn the churches\nHang the christfags in the street',
+    'Burn the churches\nHang the christfags in the street',
     'Shut your mouth cat!'
 ]
 
@@ -115,6 +119,7 @@ async def reload_mappings(ctx: Context) -> None:
     mapping_resp = requests.get('https://prices.runescape.wiki/api/v1/osrs/mapping', headers=WIKI_HEADERS).json()
     with open('mappings.json', 'w') as f:
         json.dump(mapping_resp, f)
+    load_mappings()
 
 
 def get_choice() -> Tuple[int, bool]:
@@ -164,6 +169,29 @@ async def mm(ctx: Context):
         msg = await channel.send(f"{img} <@{SEVEN_ID}>")
         await msg.add_reaction("<a:Sensei:918707966184677378>")
 
+# Map channel to (last_time, count)
+last_times: Dict[str, Tuple[datetime, int]] = {}
+CARDIO_TIMEOUT_MINS = 5
+CARDIO_TIMEOUT_COUNT = 3
+
+@client.command()
+async def khal(ctx: Context):
+    if not isinstance(ctx.channel, discord.VoiceChannel):
+        msg: Message = ctx.message
+        curr_time = msg.created_at
+        channel = ctx.channel
+        if channel in last_times:
+            prev_time, count = last_times[channel]
+            if ((curr_time - prev_time).total_seconds() / 60 <= CARDIO_TIMEOUT_MINS) and count >= CARDIO_TIMEOUT_COUNT:
+                await ctx.channel.send("MORE THAN 3 IS CARDIO")
+                del last_times[channel]
+            else:
+                last_times[channel] = (curr_time, count + 1)
+                await ctx.channel.send("DISREGARD")
+        else:
+            last_times[channel] = (curr_time, 1)
+            await ctx.channel.send("DISREGARD")
+
 
 def refresh_cache(item_id: int) -> None:
     item_price_resp = requests.get(f'https://prices.runescape.wiki/api/v1/osrs/latest?id={item_id}', headers=WIKI_HEADERS).json()
@@ -183,13 +211,15 @@ async def on_message(message: Message):
 
 
 @client.command()
-async def price(ctx: Context, *item_args):
+async def price(ctx: Context, *, item_args=None):
     if ctx.message.author.id == CJ_ID:
         await ctx.message.add_reaction('🖕')
         return
     
-    item_name = ' '.join(item_args)
+    item_name: str  = ''.join(item_args)
     item_name = item_name.lower()
+    # Normalize everything to '
+    item_name = item_name.replace('’', '\'')
     print(f"Looking up price for {item_name}")
     item_id, icon = mappings.get(item_name, (None, None))
     if item_id:
@@ -232,6 +262,19 @@ async def honk(ctx: Context):
         await channel.send(honk_string)
 
 
-load_mappings()
-print("Running")
-client.run(os.environ.get('DISCORD_SECRET'))
+def test():
+    christs = 0
+    cats = 0
+    for _ in range(10000):
+        s = random.choice(HONKS)
+        if s == HONKS[0]:
+            christs += 1
+        else:
+            cats += 1
+    return (christs, cats)
+
+
+if __name__ == "__main__":
+    load_mappings()
+    print("Running")
+    client.run(os.environ.get('DISCORD_SECRET'))
