@@ -10,8 +10,9 @@ import random
 from discord.flags import Intents
 from discord.message import Message
 import requests
-from typing import Dict, Mapping, Tuple
+from typing import Dict, List, Mapping, Tuple
 from discord.abc import Messageable
+from discord.ext import commands
 from discord.ext.commands import Bot, check, Context
 
 discord_logger = logging.getLogger('discord')
@@ -89,6 +90,11 @@ CJ_ID = 378992331782619137
 SEVEN_ID = 287003884889833472
 GOOSE_ID = 264822497206206468
 
+SIMPLE_COMMANDS: List[Tuple[str, str]] = [
+    ('halal', 'RETARD'),
+    ('arma', 'EAT!')
+]
+
 
 def is_owner():
     async def predicate(ctx):
@@ -105,12 +111,15 @@ mappings = {}
 
 
 def load_mappings():
-    with open("mappings.json") as f:
-        raw_mappings = json.load(f)
-        for m in raw_mappings:
-            mappings[m['name'].lower()] = (m['id'], m['icon'])
+    try:
+        with open("mappings.json") as f:
+            raw_mappings = json.load(f)
+            for m in raw_mappings:
+                mappings[m['name'].lower()] = (m['id'], m['icon'])
 
-    logger.info(f"Loaded {len(mappings)} mappings")
+        logger.info(f"Loaded {len(mappings)} mappings")
+    except FileNotFoundError:
+        logger.warn("No mappings exist, run !reload_mappings")
 
 
 @client.command()
@@ -192,12 +201,6 @@ async def khal(ctx: Context):
         else:
             last_times[channel] = (curr_time, 1)
             await ctx.channel.send("DISREGARD")
-
-
-@client.command()
-async def halal(ctx: Context):
-    if not isinstance(ctx.channel, discord.VoiceChannel):
-        await ctx.channel.send("RETARD")
 
 
 def refresh_cache(item_id: int) -> None:
@@ -284,4 +287,10 @@ def test():
 if __name__ == "__main__":
     load_mappings()
     print("Running")
+    for name, response in SIMPLE_COMMANDS:
+        async def _(ctx: Context):
+            await ctx.send(response)
+        f = _
+        f.__name__ = name
+        client.add_command(commands.command(name=name)(f))
     client.run(os.environ.get('DISCORD_SECRET'))
