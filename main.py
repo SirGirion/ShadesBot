@@ -1,4 +1,5 @@
 from datetime import datetime
+from dis import disco
 import json
 import os
 import time
@@ -191,6 +192,12 @@ async def khal(ctx: Context):
         else:
             last_times[channel] = (curr_time, 1)
             await ctx.channel.send("DISREGARD")
+
+
+@client.command()
+async def halal(ctx: Context):
+    if not isinstance(ctx.channel, discord.VoiceChannel):
+        await ctx.channel.send("RETARD")
 
 
 def refresh_cache(item_id: int) -> None:
