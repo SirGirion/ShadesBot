@@ -105,12 +105,15 @@ mappings = {}
 
 
 def load_mappings():
-    with open("mappings.json") as f:
-        raw_mappings = json.load(f)
-        for m in raw_mappings:
-            mappings[m['name'].lower()] = (m['id'], m['icon'])
+    try:
+        with open("mappings.json") as f:
+            raw_mappings = json.load(f)
+            for m in raw_mappings:
+                mappings[m['name'].lower()] = (m['id'], m['icon'])
 
-    logger.info(f"Loaded {len(mappings)} mappings")
+        logger.info(f"Loaded {len(mappings)} mappings")
+    except FileNotFoundError:
+        logger.warn("No mappings exist, run !reload_mappings")
 
 
 @client.command()
