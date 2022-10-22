@@ -10,8 +10,9 @@ import random
 from discord.flags import Intents
 from discord.message import Message
 import requests
-from typing import Dict, Mapping, Tuple
+from typing import Dict, List, Mapping, Tuple
 from discord.abc import Messageable
+from discord.ext import commands
 from discord.ext.commands import Bot, check, Context
 
 discord_logger = logging.getLogger('discord')
@@ -88,6 +89,11 @@ GIRION_ID = 235181847770824707
 CJ_ID = 378992331782619137
 SEVEN_ID = 287003884889833472
 GOOSE_ID = 264822497206206468
+
+SIMPLE_COMMANDS: List[Tuple[str, str]] = [
+    ('halal', 'RETARD'),
+    ('arma', 'EAT!')
+]
 
 
 def is_owner():
@@ -197,12 +203,6 @@ async def khal(ctx: Context):
             await ctx.channel.send("DISREGARD")
 
 
-@client.command()
-async def halal(ctx: Context):
-    if not isinstance(ctx.channel, discord.VoiceChannel):
-        await ctx.channel.send("RETARD")
-
-
 def refresh_cache(item_id: int) -> None:
     item_price_resp = requests.get(f'https://prices.runescape.wiki/api/v1/osrs/latest?id={item_id}', headers=WIKI_HEADERS).json()
     data = item_price_resp['data'][str(item_id)]
@@ -287,4 +287,10 @@ def test():
 if __name__ == "__main__":
     load_mappings()
     print("Running")
+    for name, response in SIMPLE_COMMANDS:
+        async def _(ctx: Context):
+            await ctx.send(response)
+        f = _
+        f.__name__ = name
+        client.add_command(commands.command(name=name)(f))
     client.run(os.environ.get('DISCORD_SECRET'))
