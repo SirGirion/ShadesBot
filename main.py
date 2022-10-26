@@ -16,9 +16,9 @@ from discord.ext import commands
 from discord.ext.commands import Bot, check, Context
 
 discord_logger = logging.getLogger('discord')
-discord_handler = logging.StreamHandler(sys.stdout)
+#discord_handler = logging.StreamHandler(sys.stdout)
 discord_logger.setLevel(logging.DEBUG)
-discord_logger.addHandler(discord_handler)
+#discord_logger.addHandler(discord_handler)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -284,13 +284,18 @@ def test():
     return (christs, cats)
 
 
+def build_command(name: str, response: str):
+    async def _(ctx: Context) -> None:
+        await ctx.send(response)
+    
+    f = _
+    f.__name__ = name
+    return commands.command(name=name)(f)
+
+
 if __name__ == "__main__":
     load_mappings()
     print("Running")
     for name, response in SIMPLE_COMMANDS:
-        async def _(ctx: Context):
-            await ctx.send(response)
-        f = _
-        f.__name__ = name
-        client.add_command(commands.command(name=name)(f))
+        client.add_command(build_command(name, response))
     client.run(os.environ.get('DISCORD_SECRET'))
