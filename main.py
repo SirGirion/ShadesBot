@@ -16,9 +16,9 @@ from discord.ext import commands
 from discord.ext.commands import Bot, check, Context
 
 discord_logger = logging.getLogger('discord')
-#discord_handler = logging.StreamHandler(sys.stdout)
+discord_handler = logging.StreamHandler(sys.stdout)
 discord_logger.setLevel(logging.DEBUG)
-#discord_logger.addHandler(discord_handler)
+discord_logger.addHandler(discord_handler)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
