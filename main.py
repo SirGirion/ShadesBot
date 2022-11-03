@@ -15,10 +15,11 @@ from discord.abc import Messageable
 from discord.ext import commands
 from discord.ext.commands import Bot, check, Context
 
-discord_logger = logging.getLogger('discord')
-discord_handler = logging.StreamHandler(sys.stdout)
-discord_logger.setLevel(logging.DEBUG)
-discord_logger.addHandler(discord_handler)
+if 'LOG_DISCORD' in os.environ and int(os.environ['LOG_DISCORD']) == 1:
+    discord_logger = logging.getLogger('discord')
+    discord_handler = logging.StreamHandler(sys.stdout)
+    discord_logger.setLevel(logging.DEBUG)
+    discord_logger.addHandler(discord_handler)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -90,6 +91,10 @@ CJ_ID = 378992331782619137
 SEVEN_ID = 287003884889833472
 GOOSE_ID = 264822497206206468
 
+# 196692288699629568 # Zed
+BANNED: List[int] = []
+
+
 SIMPLE_COMMANDS: List[Tuple[str, str]] = [
     ('halal', 'RETARD'),
     ('arma', 'EAT!')
@@ -100,6 +105,13 @@ def is_owner():
     async def predicate(ctx):
         return ctx.author.id == GIRION_ID
     return check(predicate)
+
+
+def is_not_banned():
+    async def predicate(ctx: Context):
+        return ctx.author.id not in BANNED
+    return check(predicate)
+
 
 WIKI_HEADERS = {
     'User-Agent': 'ShadesBot'
@@ -167,6 +179,7 @@ async def pretzel(ctx: Context, choice: int) -> None:
 
 
 @client.command()
+@is_not_banned()
 async def mm(ctx: Context):
     if ctx.message.author.id == CJ_ID:
         await ctx.message.add_reaction('🖕')
@@ -179,12 +192,14 @@ async def mm(ctx: Context):
         msg = await channel.send(f"{img} <@{SEVEN_ID}>")
         await msg.add_reaction("<a:Sensei:918707966184677378>")
 
+
 # Map channel to (last_time, count)
 last_times: Dict[str, Tuple[datetime, int]] = {}
 CARDIO_TIMEOUT_MINS = 5
 CARDIO_TIMEOUT_COUNT = 3
 
 @client.command()
+@is_not_banned()
 async def khal(ctx: Context):
     if not isinstance(ctx.channel, discord.VoiceChannel):
         msg: Message = ctx.message
@@ -221,11 +236,8 @@ async def on_message(message: Message):
 
 
 @client.command()
+@is_not_banned()
 async def price(ctx: Context, *, item_args=None):
-    if ctx.message.author.id == CJ_ID:
-        await ctx.message.add_reaction('🖕')
-        return
-    
     item_name: str  = ''.join(item_args)
     item_name = item_name.lower()
     # Normalize everything to '
@@ -258,6 +270,7 @@ async def price(ctx: Context, *, item_args=None):
 
 
 @client.command()
+@is_not_banned()
 async def apple(ctx: Context):
     if not isinstance(ctx.channel, discord.VoiceChannel):
         channel: Messageable = ctx.channel
@@ -265,6 +278,7 @@ async def apple(ctx: Context):
 
 
 @client.command()
+@is_not_banned()
 async def honk(ctx: Context):
     if not isinstance(ctx.channel, discord.VoiceChannel):
         channel: Messageable = ctx.channel
@@ -272,19 +286,8 @@ async def honk(ctx: Context):
         await channel.send(honk_string)
 
 
-def test():
-    christs = 0
-    cats = 0
-    for _ in range(10000):
-        s = random.choice(HONKS)
-        if s == HONKS[0]:
-            christs += 1
-        else:
-            cats += 1
-    return (christs, cats)
-
-
 def build_command(name: str, response: str):
+    @is_not_banned()
     async def _(ctx: Context) -> None:
         await ctx.send(response)
     
@@ -293,7 +296,40 @@ def build_command(name: str, response: str):
     return commands.command(name=name)(f)
 
 
+def load_banned_users() -> None:
+    with open("banned.txt") as banned_file:
+        ids = [int(line) for line in banned_file.readlines()]
+        logger.info(ids)
+        BANNED.extend(ids)
+
+
+def save_banned_users() -> None:
+    with open("banned.txt", "w") as banned_file:
+        for banned_id in BANNED:
+            banned_file.write(f'{banned_id}\n')
+
+
+@is_owner()
+@client.command()
+async def ban_user(ctx: Context, *, to_ban: discord.User) -> None:
+    logger.info(f'Banning {to_ban.name}')
+    BANNED.append(to_ban.id)
+    save_banned_users()
+
+
+@is_owner()
+@client.command()
+async def unban_user(ctx: Context, *, to_unban: discord.User) -> None:
+    unban_id = to_unban.id
+    if unban_id in BANNED:
+        logger.info(f'Unbanning {to_unban.name}')
+        BANNED.remove(unban_id)
+        save_banned_users()
+
+
 if __name__ == "__main__":
+    # Load our banned users
+    load_banned_users()
     load_mappings()
     print("Running")
     for name, response in SIMPLE_COMMANDS:
