@@ -144,9 +144,11 @@ async def reload_mappings(ctx: Context) -> None:
     load_mappings()
 
 
-def get_choice() -> Tuple[int, bool]:
+def get_choice(user_id: int) -> Tuple[int, bool]:
     # Roll for regular or rare pretzel
     roll = random.randint(0, len(IMAGES))
+    if user_id == 267362181337710593:
+        roll = random.randint(0, len(IMAGES) + 10)
     if roll < len(IMAGES):
         return (roll, False)
     else:
@@ -181,10 +183,7 @@ async def pretzel(ctx: Context, choice: int) -> None:
 @client.command()
 @is_not_banned()
 async def mm(ctx: Context):
-    if ctx.message.author.id == CJ_ID:
-        await ctx.message.add_reaction('🖕')
-        return
-    c, rare_ed = get_choice()
+    c, rare_ed = get_choice(ctx.author.id)
     img = IMAGES[c] if not rare_ed else RARE_EDS[rare_ed]
     if not isinstance(ctx.channel, discord.VoiceChannel):
         print(f"Sending image {img} ({c})")
