@@ -9,10 +9,12 @@ import logging
 import random
 from discord.flags import Intents
 from discord.message import Message
+from discord import Guild
+from discord.abc import GuildChannel
 import requests
 from typing import Dict, List, Mapping, Tuple
 from discord.abc import Messageable
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ext.commands import Bot, check, Context
 
 if 'LOG_DISCORD' in os.environ and int(os.environ['LOG_DISCORD']) == 1:
@@ -86,10 +88,12 @@ HONKS = [
     'Shut your mouth cat!'
 ]
 
+BOT_ID = 424385416209367072
 GIRION_ID = 235181847770824707
 CJ_ID = 378992331782619137
 SEVEN_ID = 287003884889833472
 GOOSE_ID = 264822497206206468
+GURT_ID = 163194100684816385
 
 # 196692288699629568 # Zed
 BANNED: List[int] = []
@@ -97,7 +101,8 @@ BANNED: List[int] = []
 
 SIMPLE_COMMANDS: List[Tuple[str, str]] = [
     ('halal', 'RETARD'),
-    ('arma', 'EAT!')
+    ('arma', 'EAT!'),
+    ('retard', 'https://i.kym-cdn.com/photos/images/original/000/738/025/db0.jpg')
 ]
 
 
@@ -168,7 +173,7 @@ def get_choice(user_id: int) -> Tuple[int, bool]:
                 return (3, True)
         else:
             # Re-roll
-            return get_choice()
+            return get_choice(user_id)
 
 
 @client.command()
@@ -230,8 +235,12 @@ async def on_message(message: Message):
             await message.add_reaction("<a:Sensei:918707966184677378>")
         seven_logger.info(f'channel({message.channel}): {message.content}')
     if message.author.id == 434975622586957824 and '<:FeelsAnnoyedMan:722224702415962243>' in message.content:
-        print('Trolling mystic')
-        await message.add_reaction('🌳')
+        if random.randint(0, 4) == 0:
+            print('Trolling mystic')
+            await message.add_reaction('🌳')
+    if message.author.id == 88473693600108544:
+        if random.randint(0, 4) == 0:
+            await message.add_reaction('🧤')
 
 
 @client.command()
@@ -332,5 +341,6 @@ if __name__ == "__main__":
     load_mappings()
     print("Running")
     for name, response in SIMPLE_COMMANDS:
+        print(f'Adding simple command !{name}')
         client.add_command(build_command(name, response))
     client.run(os.environ.get('DISCORD_SECRET'))
